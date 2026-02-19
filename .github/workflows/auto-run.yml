@@ -1,0 +1,21 @@
+name: Boss Alert to Discord
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [boss_alert]
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Boss Message to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"content\": \"🔥 boss muncul\"
+            }"
