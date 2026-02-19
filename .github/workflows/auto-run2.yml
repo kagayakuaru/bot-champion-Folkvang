@@ -1,4 +1,4 @@
-name: Boss Alert to Discord
+name: Boss Alert to Discord F2
 
 on:
   workflow_dispatch:
