@@ -1,0 +1,46 @@
+name: Boss Alert
+
+on:
+  repository_dispatch:
+    types: [boss_f1, boss_f2, boss_f3]
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Timezone
+        run: echo "TZ=Asia/Jakarta" >> $GITHUB_ENV
+
+      - name: Determine Boss
+        run: |
+          if [ "${{ github.event.action }}" = "boss_f1" ]; then
+            echo "CURRENT=Inter Folkvang F1" >> $GITHUB_ENV
+            echo "NEXT=Inter Folkvang F2" >> $GITHUB_ENV
+          elif [ "${{ github.event.action }}" = "boss_f2" ]; then
+            echo "CURRENT=Inter Folkvang F2" >> $GITHUB_ENV
+            echo "NEXT=Inter Folkvang F3" >> $GITHUB_ENV
+          elif [ "${{ github.event.action }}" = "boss_f3" ]; then
+            echo "CURRENT=Inter Folkvang F3" >> $GITHUB_ENV
+            echo "NEXT=Inter Folkvang F1" >> $GITHUB_ENV
+          fi
+
+          NEXT_TIME=$(date -d "+2 hour" +"%H:%M WIB")
+          echo "NEXT_TIME=$NEXT_TIME" >> $GITHUB_ENV
+
+      - name: Send to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$DISCORD_WEBHOOK_URL" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"content\": \"<@&1423740059663859842>\",
+            \"allowed_mentions\": {\"roles\": [\"1423740059663859842\"]},
+            \"embeds\": [{
+              \"color\": 16711680,
+              \"title\": \"Reminds you\",
+              \"description\": \"👹 **Boss : ${CURRENT}**\n⏳ **Status : 5 Menit lagi spawn!**\n⚔️ **Urutan : Berserker - Warlord - Mage - Skald**\n⏭️ **Next Boss : ${NEXT} | ${NEXT_TIME}**\",
+              \"footer\": {\"text\": \"Boss Alert System\"}
+            }]
+          }"
